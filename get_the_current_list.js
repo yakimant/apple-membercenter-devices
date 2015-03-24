@@ -3,6 +3,7 @@ var utils = require('utils');
 // var login_page = 'https://appleid.apple.com';
 var select_team_page = 'https://developer.apple.com/membercenter/selectTeam.action';
 var devices_list_page = 'https://developer.apple.com/account/ios/device/deviceList.action';
+var devices_create_page = 'https://developer.apple.com/account/ios/device/deviceCreate.action';
 
 var casper = require('casper').create({
   // clientScripts:  [
@@ -12,7 +13,7 @@ var casper = require('casper').create({
     loadImages:  false,        // The WebPage instance used by Casper will
     loadPlugins: false         // use these settings
   },
-  // logLevel: "info",              // Only "info" level messages will be logged
+  // logLevel: "debug",              // Only "info" level messages will be logged
   verbose: true                  // log messages will be printed out to the console
 });
 
@@ -116,15 +117,44 @@ casper.then(function() {
 
 casper.then(function() {
   for (team in devices) {
-    console.log(team);
     fs.write(team+'.txt', '{UUID}\t{NAME}\n', 'w');
     for (uuid in devices_all) {
       if (!devices[team].hasOwnProperty(uuid)){
-        console.log(uuid);
         fs.write(team+'.txt', uuid + '\t' + devices_all[uuid] + '\n', 'a');
       }
     }
   }
+});
+
+
+casper.then(function() {
+  // teams = [ 'SEBLZJQ5TG' ];
+  this.each(teams, function(self, team) {
+    this.thenOpen(select_team_page, function(response) {
+      console.log('Adding devices to following team: ' + team);
+      this.fillSelectors('form#saveTeamSelection', {
+        'select[name="memberDisplayId"]':  team,
+      }, true);
+      this.thenOpen(devices_create_page, function(response) {
+      }).waitForSelector('input#register-multiple', function() {
+        this.click('input#register-multiple');
+        this.fill('form#deviceImport', {
+          'upload': team+'.txt'
+        }, true);
+        this.waitForSelector('form#deviceImportSave', function() {
+          this.fill('form#deviceImportSave', {
+          }, true);
+          utils.dump(devices[team]);
+          this.capture(team+'.png');
+        });
+      }, function() {
+        console.log('Can\'t open the teams devices page: ' + team);
+      });
+    });
+  });
+});
+
+casper.then(function() {
 });
 
 casper.run();
