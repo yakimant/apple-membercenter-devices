@@ -1,4 +1,6 @@
 {
-  'appleid' : 'chubaka',
-  'password'  : 'ulybaka'
+  "appleid" : "chubaka",
+  "password"  : "ulybaka",
+  "devices_hardcoded_names" : {
+    "0000000000000000000000000000000000000000" : "Ivan\'s iPhone"
 }
