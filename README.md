@@ -6,7 +6,9 @@ Syncing device lists between the teams.
 Requires
 ========
 casperjs
-(brew install casperjs --devel for Mac)
+(brew install casperjs --devel)
+OR
+(npm install -g phantomjs@1.9.7-15 casperjs)
 
 Run
 ===
