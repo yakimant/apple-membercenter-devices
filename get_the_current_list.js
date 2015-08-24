@@ -143,6 +143,11 @@ casper.then(function addDevices() {
     var status = 'ok';
     var team = team_data.data;
     console.log('-- Adding devices to following team: ' + team.name);
+    if (devices_to_upload[team.id]['deviceNames'] == '') {
+      console.log("Nothing to add.");
+      fs.remove(team.id+'.txt');
+      return;
+    }
     this.thenOpen(select_team_page, function openSelectTeamPage() {
     }).waitForSelector('form#saveTeamSelection', function waitForSelectTeamPage() {
       }, function() {
@@ -197,14 +202,13 @@ casper.then(function addDevices() {
         }, true);
       }
     }).waitForText('Registration complete.', function importSucceed() {
-      this.capture(team.id+'.png');
+      // this.capture(team.id+'.png');
+      fs.remove(team.id+'.txt');
       console.log('Successfully imported\n');
     }, function importFailed() {
       this.capture(team.id+'.png');
       console.log('FATAL: Import failed\n');
     });
-        // this.capture(team+'.png');
-        // console.log('FATAL: Can\'t open the teams devices page.\n');
   });
 });
 
