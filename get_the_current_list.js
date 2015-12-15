@@ -36,6 +36,7 @@ casper.then(function() {
   this.options.waitTimeout = config.waitTimeout;
   this.options.timeout = config.timeout;
   devices_hardcoded_names = config.devices_hardcoded_names;
+  devices_to_remove = config.devices_to_remove;
 });
 
 casper.thenOpen(select_team_page, function openSelectTeamPage(response) {
@@ -78,7 +79,10 @@ casper.then(function() {
       fs.write(config.logfile, 'ERROR: Could not select team: ' + team.id + '\n', 'a');
       status = 'fail';
     }).thenOpen(devices_list_page, function openDevicesListPage() {
-    }).waitForSelector(".innercontent", function waitForDevicesListPage() {
+    }).waitForSelector(".innercontent #grid-table", function waitForDevicesListPage() {
+    }, function() {
+      fs.write(config.logfile, 'ERROR: Could not open devices list page for team: ' + team.id + '\n', 'a');
+      status = 'fail';
     }).then(function checkDevicesListPage() {
       if (status === 'ok') {
         status = this.evaluate(function () {
@@ -112,15 +116,20 @@ casper.then(function() {
           if (devices_hardcoded_names.hasOwnProperty(uuid)) {
             team_devices[uuid] = devices_hardcoded_names[uuid];
           }
+          if (devices_to_remove.indexOf(uuid) != -1) {
+            delete team_devices[uuid];
+          }
         }
         devices[team.id] = team_devices;
-        utils.mergeObjects(devices_all, team_devices);
+        // TODO: Sync teams option
+        // utils.mergeObjects(devices_all, team_devices);
       }
     });
   });
 });
 
 casper.then(function() {
+  utils.mergeObjects(devices_all, devices_hardcoded_names);
   for (team in devices) {
     devices_to_upload[team] = {};
     devices_to_upload[team]['deviceNames'] = '';
@@ -139,13 +148,16 @@ casper.then(function() {
 
 
 casper.then(function addDevices() {
+  // utils.dump(devices_to_upload);
   this.eachThen(teams, function(team_data) {
     var status = 'ok';
     var team = team_data.data;
     console.log('-- Adding devices to following team: ' + team.name);
-    if (devices_to_upload[team.id]['deviceNames'] == '') {
+    if ((typeof devices_to_upload[team.id] == 'undefined') || (devices_to_upload[team.id]['deviceNames'] == '')) {
       console.log("Nothing to add.");
-      fs.remove(team.id+'.txt');
+      if(fs.isFile(team.id+'.txt')){
+        fs.remove(team.id+'.txt');
+      }
       return;
     }
     this.thenOpen(select_team_page, function openSelectTeamPage() {

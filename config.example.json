@@ -1,6 +1,13 @@
 {
-  "appleid" : "chubaka",
-  "password"  : "ulybaka",
+  "logfile"     : "devices.log",
+  "appleid"     : "chubaka@starwars.com",
+  "password"    : "ulybaka",
+  "waitTimeout" : 5000,
+  "timeout"     : 100000,
   "devices_hardcoded_names" : {
     "0000000000000000000000000000000000000000" : "Ivan\'s iPhone"
+  },
+  "devices_to_remove" : [
+    "0000000000000000000000000000000000000000" : "Maria\'s iPhone"
+  ]
 }
